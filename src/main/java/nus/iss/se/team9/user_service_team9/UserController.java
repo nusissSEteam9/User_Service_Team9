@@ -38,6 +38,53 @@ public class UserController {
         return ResponseEntity.ok("Email verified successfully.");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> payload, HttpSession sessionObj) {
+        String username = payload.get("username");
+        String password = payload.get("password");
+        User user = userService.getUserByUsername(username);
+        if (user == null || !user.getPassword().equals(password)) {
+            return ResponseEntity.status(401).body("Invalid username or password.");
+        }else if(userService.checkIfAdmin(user)){
+            sessionObj.setAttribute("userId", user.getId());
+            sessionObj.setAttribute("userType", "admin");
+            sessionObj.setAttribute("isLoggedIn", true);
+            return ResponseEntity.ok("Admin login successful.");
+        }else {
+            Member member = userService.getMemberById(user.getId());
+            switch (member.getMemberStatus()) {
+                case DELETED:
+                    return ResponseEntity.status(401).body("User account has been deleted.");
+                case PENDING:
+                    return ResponseEntity.status(401).body("Please verify your email first.");
+                case REJECTED:
+                    return ResponseEntity.status(401).body("User account has been suspended.");
+                default:
+                    sessionObj.setAttribute("userId", user.getId());
+                    sessionObj.setAttribute("userType", "member");
+                    sessionObj.setAttribute("isLoggedIn", true);
+                    return ResponseEntity.ok("Login successful.");
+            }
+        }
+    }
+
+    @GetMapping("/sessionInfo")
+    public ResponseEntity<?> getSessionInfo(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        String userType = (String) session.getAttribute("userType");
+        Boolean isLoggedIn = (Boolean) session.getAttribute("isLoggedIn");
+
+        if (userId == null || userType == null) {
+            return ResponseEntity.status(401).body("No session available or user not logged in.");
+        }
+
+        Map<String, Object> sessionInfo = new HashMap<>();
+        sessionInfo.put("userId", userId);
+        sessionInfo.put("userType", userType);
+        sessionInfo.put("isLoggedIn", isLoggedIn);
+        return ResponseEntity.ok(sessionInfo);
+    }
+
     // 查看用户的profile
     @GetMapping("/profile/{id}")
     public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId, HttpSession sessionObj) {
