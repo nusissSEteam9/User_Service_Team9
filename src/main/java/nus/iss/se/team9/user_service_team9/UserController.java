@@ -27,16 +27,27 @@ public class UserController {
     private ShoppingListItemService shoppingListItemService;
 
     //Non-Member
-    //在前端verify成功后跳转
-    @PostMapping("/verifyEmail")
-    public ResponseEntity<?> verifyEmail(@RequestBody Member member, HttpSession httpSession) {
-        userService.saveMember(member);
-        httpSession.setAttribute("userId", member.getId());
-        if (member.getPerfenceList() == null || member.getPerfenceList().isEmpty()) {
-            return ResponseEntity.ok("Email verified. Please set your preferences.");
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody Member newMember, BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
+
+        // 检查是否有验证错误
+        if (bindingResult.hasErrors()) {
+            response.put("message", "Invalid input data");
+            response.put("errors", bindingResult.getFieldErrors());
+            return ResponseEntity.badRequest().body(response);
         }
-        return ResponseEntity.ok("Email verified successfully.");
+
+        try {
+            userService.saveMember(newMember);
+            response.put("message", "User created successfully.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("message", "User creation failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+
 
     // 查看用户的profile
     @GetMapping("/profile/{id}")
@@ -76,12 +87,12 @@ public class UserController {
         List<String> oldTags = (List<String>) session.getAttribute("tags");
         Member member = userService.getMemberById((int) session.getAttribute("userId"));
         if (oldTags == null) {
-            member.setPrefenceList(tags);
+            member.setPerfenceList(tags);
         } else {
             Set<String> selectedTags = new HashSet<>(oldTags);
             selectedTags.addAll(tags);
             List<String> combinedTags = new ArrayList<>(selectedTags);
-            member.setPrefenceList(combinedTags);
+            member.setPerfenceList(combinedTags);
         }
         userService.saveMember(member);
         return ResponseEntity.ok("Preferences updated");

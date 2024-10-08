@@ -13,22 +13,14 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
     @Autowired
-    UserRepository userRepo;
+    UserRepository userRepository;
     @Autowired
-    MemberRepository memberRepo;
+    MemberRepository memberRepository;
     @Autowired
-    RecipeRepository recipeRepo;
-    @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private RecipeRepository recipeRepository;
-    @Autowired
-    private RecipeReportRepository recipeReportRepository;
-    @Autowired
-    private MemberReportRepository memberReportRepository;
+    RecipeRepository recipeRepository;
 
     public void saveMember(Member member) {
-        memberRepo.save(member);
+        memberRepository.save(member);
     }
 
     // Searching and Filtering methods
@@ -38,7 +30,7 @@ public class UserService {
     }
 
     public boolean checkIfUserExist(String username) {
-        return userRepo.findByUsername(username) != null;
+        return userRepository.findByUsername(username) != null;
     }
 
     public Set<String> getRandomUniqueTags(int count) {
@@ -49,7 +41,7 @@ public class UserService {
 
     // get all unique tags
     public Set<String> getAllUniqueTags() {
-        List<String> tagLists = recipeRepo.findAllDistinctTags();
+        List<String> tagLists = recipeRepository.findAllDistinctTags();
         Set<String> uniqueTags = new HashSet<>();
         for (String tags : tagLists) {
             uniqueTags.addAll(Arrays.asList(tags.split(",")));

@@ -24,40 +24,23 @@ public class Member extends User{
 	private Double calorieIntake;
 	@Column
 	private LocalDate registrationDate;
-	
 	@Column
 	@Enumerated(EnumType.STRING)
 	private Status memberStatus;
-	
 	@ElementCollection
-	private List<String> prefenceList;
-	
-	public List<String> getPerfenceList() {
-		return prefenceList;
-	}
-
-	public void setPrefenceList(List<String> prefenceList) {
-		this.prefenceList = prefenceList;
-	}
-	
+	private List<String> preferenceList;
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
 	private List<ShoppingListItem> shoppingList;
-	
 	@ManyToMany(mappedBy = "membersWhoSave")
 	private List<Recipe> savedRecipes;
-	
 	@OneToMany(mappedBy = "member")
 	private List<Recipe> addedRecipes;
-	
 	@OneToMany(mappedBy = "member")
 	private List<Review> reviews;
-	
 	@OneToMany(mappedBy = "member")
 	private List<Report> reports;
-	
 	@OneToMany(mappedBy = "memberReported")
 	private List<MemberReport> reportsToMember;
-	
 	public Member() {}
 	
 	public Member(String username, String password, double height, double weight, LocalDate birthdate, String gender, String email) {
@@ -79,6 +62,13 @@ public class Member extends User{
 		this.setRegistrationDate(LocalDate.now());
 	}
 
+	public List<String> getPerfenceList() {
+		return preferenceList;
+	}
+
+	public void setPerfenceList(List<String> perfenceList) {
+		this.preferenceList = perfenceList;
+	}
 	public Double getHeight() {
 		return height;
 	}
