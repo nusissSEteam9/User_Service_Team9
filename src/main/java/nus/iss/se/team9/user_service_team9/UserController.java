@@ -26,26 +26,12 @@ public class UserController {
     @Autowired
     private ShoppingListItemService shoppingListItemService;
 
-    //Non-Member
     @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody Member newMember, BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
-
-        // 检查是否有验证错误
-        if (bindingResult.hasErrors()) {
-            response.put("message", "Invalid input data");
-            response.put("errors", bindingResult.getFieldErrors());
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        try {
-            userService.saveMember(newMember);
-            response.put("message", "User created successfully.");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("message", "User creation failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<Map<String, String>> createMember(@RequestBody Member newMember, @RequestHeader("Authorization") String token) {
+        Map<String, String> response = new HashMap<>();
+        userService.saveMember(newMember);
+        response.put("message", "Member created successfully");
+        return ResponseEntity.ok(response);
     }
 
     // 查看用户的profile
@@ -86,12 +72,12 @@ public class UserController {
         List<String> oldTags = (List<String>) session.getAttribute("tags");
         Member member = userService.getMemberById((int) session.getAttribute("userId"));
         if (oldTags == null) {
-            member.setPerferenceList(tags);
+            member.setPreferenceList(tags);
         } else {
             Set<String> selectedTags = new HashSet<>(oldTags);
             selectedTags.addAll(tags);
             List<String> combinedTags = new ArrayList<>(selectedTags);
-            member.setPerfenceList(combinedTags);
+            member.setPreferenceList(combinedTags);
         }
         userService.saveMember(member);
         return ResponseEntity.ok("Preferences updated");

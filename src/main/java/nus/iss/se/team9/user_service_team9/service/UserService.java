@@ -54,7 +54,7 @@ public class UserService {
     }
 
     public User getUserByUsername(String username) {
-        return userRepo.findByUsername(username);
+        return userRepository.findByUsername(username);
     }
 
     public boolean checkIfAdmin(User user) {
