@@ -1,5 +1,8 @@
 package nus.iss.se.team9.user_service_team9.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonMerge;
 import jakarta.persistence.*;
 import nus.iss.se.team9.user_service_team9.enu.Status;
 
@@ -30,12 +33,16 @@ public class Member extends User{
 	@ElementCollection
 	private List<String> preferenceList;
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<ShoppingListItem> shoppingList;
 	@ManyToMany(mappedBy = "membersWhoSave")
+	@JsonIgnore
 	private List<Recipe> savedRecipes;
 	@OneToMany(mappedBy = "member")
+	@JsonManagedReference
 	private List<Recipe> addedRecipes;
 	@OneToMany(mappedBy = "member")
+	@JsonManagedReference
 	private List<Review> reviews;
 	@OneToMany(mappedBy = "member")
 	private List<Report> reports;

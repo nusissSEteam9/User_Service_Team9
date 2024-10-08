@@ -48,7 +48,6 @@ public class UserController {
         }
     }
 
-
     // 查看用户的profile
     @GetMapping("/profile/{id}")
     public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId, HttpSession sessionObj) {
@@ -87,7 +86,7 @@ public class UserController {
         List<String> oldTags = (List<String>) session.getAttribute("tags");
         Member member = userService.getMemberById((int) session.getAttribute("userId"));
         if (oldTags == null) {
-            member.setPerfenceList(tags);
+            member.setPerferenceList(tags);
         } else {
             Set<String> selectedTags = new HashSet<>(oldTags);
             selectedTags.addAll(tags);
