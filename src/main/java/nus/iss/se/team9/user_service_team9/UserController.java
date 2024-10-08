@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import nus.iss.se.team9.user_service_team9.enu.Status;
 import nus.iss.se.team9.user_service_team9.model.*;
+import nus.iss.se.team9.user_service_team9.service.JwtService;
 import nus.iss.se.team9.user_service_team9.service.RecipeService;
 import nus.iss.se.team9.user_service_team9.service.ShoppingListItemService;
 import nus.iss.se.team9.user_service_team9.service.UserService;
@@ -24,6 +25,8 @@ public class UserController {
     @Autowired
     private RecipeService recipeService;
     @Autowired
+    private JwtService jwtService;
+    @Autowired
     private ShoppingListItemService shoppingListItemService;
 
     @PostMapping("/create")
@@ -34,20 +37,46 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/search/user")
+    public ResponseEntity<User> searchUserByUsername(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        if (username == null || username.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/search/member")
+    public ResponseEntity<Member> searchMemberById(@RequestBody Map<String, Integer> request) {
+        Integer id = request.get("id");
+        if (id == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        Member member = userService.getMemberById(id);
+        if (member == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(member);
+    }
+
+
     // 查看用户的profile
     @GetMapping("/profile/{id}")
-    public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId, HttpSession sessionObj) {
+    public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId,@RequestHeader("Authorization") String token) {
         Member member = userService.getMemberById(memberId);
         if (member == null || member.getMemberStatus() == Status.DELETED) {
             return ResponseEntity.status(404).body(Map.of("message", "User not found or has been deleted."));
         }
         List<Recipe> publicRecipes = recipeService.getAllRecipesByMember(member, Status.PUBLIC);
-        Boolean isAdmin = sessionObj.getAttribute("userId") != null && sessionObj.getAttribute("userType").equals("admin");
+        Boolean isAdmin = jwtService.extractRole(token).equals("admin");
         Map<String, Object> response = new HashMap<>();
         response.put("member", member);
         response.put("publicRecipes", publicRecipes);
         response.put("ifAdmin", isAdmin);
-
         return ResponseEntity.ok(response);
     }
 
@@ -68,9 +97,9 @@ public class UserController {
     }
 
     @PostMapping("/setPreference")
-    public ResponseEntity<String> receivePreference(@RequestParam(value = "tags", required = false) List<String> tags, HttpSession session) {
+    public ResponseEntity<String> receivePreference(@RequestParam(value = "tags", required = false) List<String> tags,@RequestHeader("Authorization") String token, HttpSession session) {
         List<String> oldTags = (List<String>) session.getAttribute("tags");
-        Member member = userService.getMemberById((int) session.getAttribute("userId"));
+        Member member = userService.getMemberById(jwtService.extractId(token));
         if (oldTags == null) {
             member.setPreferenceList(tags);
         } else {
@@ -103,11 +132,10 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-
     // Member
     @GetMapping("/member/savedList")
-    public ResponseEntity<?> showSavedList(HttpSession sessionObj) {
-        Integer id = (Integer) sessionObj.getAttribute("userId");
+    public ResponseEntity<?> showSavedList(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
@@ -117,8 +145,8 @@ public class UserController {
     }
 
     @GetMapping("/member/myRecipeList")
-    public ResponseEntity<?> showMyRecipeList(HttpSession sessionObj) {
-        Integer id = (Integer) sessionObj.getAttribute("userId");
+    public ResponseEntity<?> showMyRecipeList(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
@@ -130,8 +158,8 @@ public class UserController {
     }
 
     @GetMapping("/member/myReview")
-    public ResponseEntity<?> showMyReviewList(HttpSession sessionObj) {
-        Integer id = (Integer) sessionObj.getAttribute("userId");
+    public ResponseEntity<?> showMyReviewList(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
@@ -141,8 +169,8 @@ public class UserController {
     }
 
     @GetMapping("/member/myProfile")
-    public ResponseEntity<Member> viewMemberProfile(HttpSession sessionObj) {
-        Integer id = (Integer) sessionObj.getAttribute("userId");
+    public ResponseEntity<Member> viewMemberProfile(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).build();
         }
@@ -154,15 +182,15 @@ public class UserController {
     }
 
     @PostMapping("/member/saveProfile")
-    public ResponseEntity<String> saveProfile(@RequestBody @Valid Member member, BindingResult bindingResult, HttpSession sessionObj) {
+    public ResponseEntity<String> saveProfile(@RequestBody @Valid Member member, BindingResult bindingResult, @RequestHeader("Authorization") String token) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body("Profile data is invalid. Please check the input.");
         }
-        Integer userId = (Integer) sessionObj.getAttribute("userId");
-        if (userId == null) {
+        Integer id = jwtService.extractId(token);
+        if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
-        member.setId(userId);
+        member.setId(id);
         userService.saveMember(member);
         return ResponseEntity.ok("Profile updated successfully.");
     }
@@ -179,12 +207,12 @@ public class UserController {
     @PostMapping("/member/shoppingList/add")
     public ResponseEntity<String> addShoppingListIngredient(
             @RequestBody @Valid AddIngredientForm addIngredientForm,
-            BindingResult bindingResult, HttpSession sessionObj) {
+            BindingResult bindingResult, @RequestHeader("Authorization") String token) {
 
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body("Invalid ingredient data");
         }
-        Member member = userService.getMemberById((int) sessionObj.getAttribute("userId"));
+        Member member = userService.getMemberById(jwtService.extractId(token));
         if (member == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found or unauthorized");
         }
@@ -208,8 +236,8 @@ public class UserController {
 
     // View the shopping list
     @GetMapping("/member/shoppingList/view")
-    public ResponseEntity<List<ShoppingListItem>> viewShoppingListIngredient(HttpSession sessionObj) {
-        Member member = userService.getMemberById((int) sessionObj.getAttribute("userId"));
+    public ResponseEntity<List<ShoppingListItem>> viewShoppingListIngredient(@RequestHeader("Authorization") String token) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
         List<ShoppingListItem> shoppingList = member.getShoppingList();
         return ResponseEntity.ok(shoppingList);
     }
@@ -226,17 +254,17 @@ public class UserController {
     }
 
     @GetMapping("/member/shoppingList/edit")
-    public ResponseEntity<List<ShoppingListItem>> editShoppingList(HttpSession sessionObj) {
-        Member member = userService.getMemberById((int) sessionObj.getAttribute("userId"));
+    public ResponseEntity<List<ShoppingListItem>> editShoppingList(@RequestHeader("Authorization") String token) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
         List<ShoppingListItem> shoppingList = member.getShoppingList();
         return ResponseEntity.ok(shoppingList);
     }
 
     // Clear shopping list items
     @PostMapping("/member/shoppingList/clearItems")
-    public ResponseEntity<Void> clearItems(@RequestBody Map<String, Object> payload, HttpSession sessionObj) {
+    public ResponseEntity<Void> clearItems(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
         String message = (String) payload.get("message");
-        Member member = userService.getMemberById((int) sessionObj.getAttribute("userId"));
+        Member member = userService.getMemberById(jwtService.extractId(token));
         List<ShoppingListItem> shoppingList = member.getShoppingList();
 
         Iterator<ShoppingListItem> iterator = shoppingList.iterator();
@@ -253,9 +281,9 @@ public class UserController {
 
     // Add shopping list item manually
     @PostMapping("/member/shoppingList/addItem")
-    public ResponseEntity<Map<String, Object>> addItem(@RequestBody Map<String, Object> payload, HttpSession sessionObj) {
+    public ResponseEntity<Map<String, Object>> addItem(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
         String ingredientName = (String) payload.get("ingredientName");
-        Member member = userService.getMemberById((int) sessionObj.getAttribute("userId"));
+        Member member = userService.getMemberById(jwtService.extractId(token));
         ShoppingListItem newItem = new ShoppingListItem(member, ingredientName);
         ShoppingListItem savedItem = shoppingListItemService.saveShoppingListItem(newItem);
         int id = savedItem.getId();
