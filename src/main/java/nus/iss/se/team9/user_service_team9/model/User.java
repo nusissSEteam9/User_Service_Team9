@@ -21,7 +21,7 @@ public abstract class User {
 	@Column
 	@Email(message = "Invalid email format")
 	private String email;
-	
+
 	public String getEmail() {
 		return email;
 	}
@@ -31,7 +31,7 @@ public abstract class User {
 	}
 
 	public User() {}
-	
+
 	public User(String username, String password) {
 		this.username = username;
 		this.password = password;

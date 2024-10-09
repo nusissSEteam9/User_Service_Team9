@@ -87,7 +87,7 @@ public class Member extends User {
 		this.setRegistrationDate(LocalDate.now());
 	}
 
-    public int calculateAge() {
+	public int calculateAge() {
 		LocalDate curDate = LocalDate.now();
 		return Period.between(birthdate, curDate).getYears();
 	}

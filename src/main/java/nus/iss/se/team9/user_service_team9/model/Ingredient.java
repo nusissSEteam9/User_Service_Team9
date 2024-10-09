@@ -29,9 +29,9 @@ public class Ingredient {
 	private Double saturatedFat;
 	@ManyToMany
 	@JoinTable(
-		name = "ingredient_recipes",
-		joinColumns = @JoinColumn(name = "recipes_id"),
-		inverseJoinColumns = @JoinColumn(name = "ingredients_id")
+			name = "ingredient_recipes",
+			joinColumns = @JoinColumn(name = "recipes_id"),
+			inverseJoinColumns = @JoinColumn(name = "ingredients_id")
 	)
 	@JsonBackReference
 	private List<Recipe> recipes;

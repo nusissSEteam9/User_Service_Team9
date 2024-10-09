@@ -37,32 +37,36 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/search/user")
-    public ResponseEntity<User> searchUserByUsername(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        if (username == null || username.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        User user = userService.getUserByUsername(username);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(user);
-    }
+    @PostMapping("/validate-login")
+    public ResponseEntity<Map<String, Object>> validateLogin(@RequestBody Map<String, String> credentials) {
+        Map<String, Object> responseBody = new HashMap<>();
+        try {
+            String username = credentials.get("username");
+            String password = credentials.get("password");
 
-    @PostMapping("/search/member")
-    public ResponseEntity<Member> searchMemberById(@RequestBody Map<String, Integer> request) {
-        Integer id = request.get("id");
-        if (id == null) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        Member member = userService.getMemberById(id);
-        if (member == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(member);
-    }
+            User user = userService.getUserByUsername(username);
+            if (user != null && Objects.equals(user.getPassword(), password)) {
+                String role = userService.checkIfAdmin(user) ? "admin" : "member";
+                responseBody.put("isValidLogin", true);
+                responseBody.put("role", role);
+                responseBody.put("userId", user.getId());
 
+                if ("member".equals(role)) {
+                    Member member = userService.getMemberById(user.getId());
+                    if (member != null && member.getMemberStatus() == Status.DELETED) {
+                        responseBody.put("status", "deleted");
+                    }
+                }
+            } else {
+                responseBody.put("isValidLogin", false);
+            }
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBody.put("error", "Internal server error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
+        }
+    }
 
     // 查看用户的profile
     @GetMapping("/profile/{id}")
@@ -292,6 +296,7 @@ public class UserController {
         response.put("id", id);
         return ResponseEntity.ok(response);
     }
+
 }
 
 

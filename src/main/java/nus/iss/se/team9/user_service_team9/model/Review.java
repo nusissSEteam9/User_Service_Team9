@@ -22,18 +22,18 @@ public class Review {
 	@ManyToOne
 	@JsonBackReference
 	private Recipe recipe;
-	
+
 	public Review() {
 		setReviewDate(LocalDate.now());
 	}
-	
+
 	public Review(int rating, String comment, Member member, Recipe recipe) {
 		this.rating = rating;
 		this.comment = comment;
 		this.member = member;
 		this.recipe = recipe;
 	}
-	
+
 	// getter and setter
 	public Integer getId() {
 		return id;

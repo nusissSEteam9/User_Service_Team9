@@ -163,7 +163,7 @@ public class Recipe {
 
 	// Getter and Setter methods
 
-    public int calculateHealthScore() {
+	public int calculateHealthScore() {
 		healthScore = 0;
 		if (protein >= 10 && protein <= 15)
 			healthScore++;

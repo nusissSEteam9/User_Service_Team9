@@ -33,8 +33,11 @@ public class JwtService {
     // 使用 JWT 密钥解析所有声明
     private Claims extractAllClaims(String token) {
         try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
             return Jwts.parser()
-                    .setSigningKey(jwtSecret) 
+                    .setSigningKey(jwtSecret)
                     .parseClaimsJws(token)
                     .getBody();
         } catch (SignatureException e) {
