@@ -30,13 +30,16 @@ public class UserController {
     private ShoppingListItemService shoppingListItemService;
 
     @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> createMember(@RequestBody Member newMember, @RequestHeader("Authorization") String token) {
-        Map<String, String> response = new HashMap<>();
-        userService.saveMember(newMember);
-        System.out.println("Created successfully");
-        System.out.println(newMember);
-        response.put("message", "Member created successfully");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Integer> createMember(@RequestBody Map<String, String> memberData) {
+        try {
+            String username = memberData.get("username");
+            String password = memberData.get("password");
+            String email = memberData.get("email");
+            Member newMember = userService.createMember(username, password, email);
+            return ResponseEntity.status(HttpStatus.OK).body(newMember.getId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @PostMapping("/validate-login")

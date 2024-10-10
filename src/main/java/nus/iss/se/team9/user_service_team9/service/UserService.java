@@ -27,6 +27,14 @@ public class UserService {
         memberRepository.save(member);
     }
 
+    public Member createMember(String username, String password, String email){
+        Member newMember = new Member();
+        newMember.setMemberStatus(Status.CREATED);
+        newMember.setUsername(username);
+        newMember.setPassword(password);
+        newMember.setEmail(email);
+        return memberRepository.save(newMember);
+    }
     // Searching and Filtering methods
     public Member getMemberById(Integer id) {
         Optional<Member> member = memberRepository.findById(id);
