@@ -33,6 +33,8 @@ public class UserController {
     public ResponseEntity<Map<String, String>> createMember(@RequestBody Member newMember, @RequestHeader("Authorization") String token) {
         Map<String, String> response = new HashMap<>();
         userService.saveMember(newMember);
+        System.out.println("Created successfully");
+        System.out.println(newMember);
         response.put("message", "Member created successfully");
         return ResponseEntity.ok(response);
     }
@@ -66,6 +68,12 @@ public class UserController {
             responseBody.put("error", "Internal server error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
         }
+    }
+
+    @GetMapping("/getAllMembersNotDeleted")
+    public ResponseEntity<List<Member>> getAllMemberNotDeleted(){
+        List<Member> members = userService.getAllMembersNotDeleted();
+        return ResponseEntity.ok(members);
     }
 
     // 查看用户的profile
@@ -134,6 +142,38 @@ public class UserController {
         response.put("updatedTags", session.getAttribute("tags"));
         response.put("newTags", newTags);
         return ResponseEntity.ok(response);
+    }
+
+    // action for test
+    @GetMapping("/member")
+    public ResponseEntity<?> getMember(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
+        if (id == null) {
+            return ResponseEntity.status(401).body("User is not logged in.");
+        }
+        return ResponseEntity.ok(userService.getMemberById(id));
+    }
+
+    @GetMapping("/member/{id}")
+    public ResponseEntity<Member> getMemberById(@PathVariable Integer id) {
+        Member member = userService.getMemberById(id);
+        if (member != null) {
+            return ResponseEntity.ok(member);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/member/{id}")
+    public ResponseEntity<Void> deleteMemberById(@PathVariable Integer id) {
+        Member member = userService.getMemberById(id);
+        if (member != null) {
+            member.setMemberStatus(Status.DELETED);
+            userService.saveMember(member);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Member

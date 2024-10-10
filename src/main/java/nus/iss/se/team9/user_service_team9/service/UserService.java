@@ -33,6 +33,10 @@ public class UserService {
         return member.orElse(null);
     }
 
+    public List<Member> getAllMembersNotDeleted(){
+        return memberRepository.findByMemberStatusNot(Status.DELETED);
+    }
+
     public boolean checkIfUserExist(String username) {
         return userRepository.findByUsername(username) != null;
     }
