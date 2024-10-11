@@ -1,6 +1,7 @@
 package nus.iss.se.team9.user_service_team9.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -8,7 +9,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import nus.iss.se.team9.user_service_team9.enu.Status;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,92 +22,77 @@ public class Recipe {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-
 	@Column
 	@NotBlank(message = "Name is required")
 	private String name;
-
 	@Column(length = 800)
 	private String description;
-
 	@Column
 	private Double rating;
-
 	@Column
 	private Integer numberOfSaved;
-
 	@Column
 	private Integer numberOfRating;
-
 	@Column
 	@NotNull(message = "Preparation Time is required")
 	private Integer preparationTime;
-
 	@Column
 	@NotNull(message = "Servings is required")
 	private Integer servings;
-
 	@Column
 	private Integer numberOfSteps;
-
 	@Column
 	private Integer healthScore;
-
 	@Column
 	private String notes;
-
 	@Column
 	private String image;
-
 	@Enumerated(EnumType.STRING)
 	private Status status;
-
 	@Column
 	private Double calories;
-
 	@Column
 	private Double protein;
-
 	@Column
 	private Double carbohydrate;
-
 	@Column
 	private Double sugar;
-
 	@Column
 	private Double sodium;
-
 	@Column
 	private Double fat;
-
 	@Column
 	private Double saturatedFat;
-
 	@Column
 	private LocalDate submittedDate;
-
 	@ElementCollection
 	@NotEmpty(message = "At least 1 step is required")
 	@Column(length = 500)
 	private List<String> steps;
-
-	@ManyToMany(mappedBy = "recipes")
-	@JsonManagedReference
-	private List<Ingredient> ingredients;
-
 	@ElementCollection
 	private List<String> tags;
 
+
+	@ManyToMany
+	@JoinTable(
+			name = "recipe_ingredients",
+			joinColumns = @JoinColumn(name = "recipe_id"),
+			inverseJoinColumns = @JoinColumn(name = "ingredient_id")
+	)
+	@JsonIgnore
+	private List<Ingredient> ingredients;
+
 	@OneToMany(mappedBy = "recipe")
-	@JsonManagedReference
+	@JsonManagedReference(value = "recipe-reviews")
 	private List<Review> reviews;
 
 	@OneToMany(mappedBy = "recipeReported")
-	private List<RecipeReport> recipesToReport;
+	@JsonManagedReference(value = "recipe-reportsToRecipe")
+	private List<RecipeReport> reportsToRecipe;
 
 	@ManyToOne
 	@JoinColumn(name = "member_id")
-	@JsonBackReference
+	@JsonBackReference(value = "member-addedRecipes")
 	private Member member;
 
 	@ManyToMany
@@ -116,14 +101,17 @@ public class Recipe {
 			joinColumns = @JoinColumn(name = "saved_recipes_id"),
 			inverseJoinColumns = @JoinColumn(name = "members_who_save_id")
 	)
-	@JsonBackReference // Backward serialization for membersWhoSave to avoid circular reference
+//	@JsonManagedReference(value = "members-savedRecipes")
+	@JsonIgnore
 	private List<Member> membersWhoSave;
+
+
 
 	public Recipe() {
 		ingredients = new ArrayList<>();
 		tags = new ArrayList<>();
 		reviews = new ArrayList<>();
-		recipesToReport = new ArrayList<>();
+		reportsToRecipe = new ArrayList<>();
 		numberOfSaved = 0;
 		numberOfRating = 0;
 		rating = 0.0;

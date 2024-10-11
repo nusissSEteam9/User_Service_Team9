@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import nus.iss.se.team9.user_service_team9.enu.Status;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -18,52 +17,50 @@ import java.util.List;
 public class Member extends User {
 	@Column
 	private Double height;
-
 	@Column
 	private Double weight;
-
 	@Column
 	private Integer age;
-
 	@Column
 	private LocalDate birthdate;
-
 	@Column
 	private String gender;
-
 	@Column
 	private Double calorieIntake;
-
 	@Column
 	private LocalDate registrationDate;
-
 	@Column
 	@Enumerated(EnumType.STRING)
 	private Status memberStatus;
-
 	@ElementCollection
 	private List<String> preferenceList;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference // Forward serialization for shoppingList
+//	@JsonManagedReference(value = "member-shoppingList")
+	@JsonIgnore
 	private List<ShoppingListItem> shoppingList;
 
 	@ManyToMany(mappedBy = "membersWhoSave")
+//	@JsonBackReference(value = "members-savedRecipes")
 	@JsonIgnore
 	private List<Recipe> savedRecipes;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference // Forward serialization for addedRecipes
+	@JsonManagedReference(value = "member-addedRecipes")
 	private List<Recipe> addedRecipes;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference // Forward serialization for reviews
+//	@JsonManagedReference (value = "member-reviews")
+	@JsonIgnore
 	private List<Review> reviews;
 
 	@OneToMany(mappedBy = "member")
+//	@JsonManagedReference (value = "member-reports")
+	@JsonIgnore
 	private List<Report> reports;
 
 	@OneToMany(mappedBy = "memberReported")
+	@JsonManagedReference (value = "member-reportsToMember")
 	private List<MemberReport> reportsToMember;
 
 	public Member() {}

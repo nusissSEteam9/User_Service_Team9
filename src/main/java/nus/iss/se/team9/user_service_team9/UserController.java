@@ -2,7 +2,6 @@ package nus.iss.se.team9.user_service_team9;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import nus.iss.se.team9.user_service_team9.enu.Status;
 import nus.iss.se.team9.user_service_team9.model.*;
 import nus.iss.se.team9.user_service_team9.service.JwtService;
 import nus.iss.se.team9.user_service_team9.service.RecipeService;

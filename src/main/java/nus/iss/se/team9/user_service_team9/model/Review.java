@@ -1,6 +1,7 @@
 package nus.iss.se.team9.user_service_team9.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -17,23 +18,24 @@ public class Review {
 	@Column
 	private LocalDate reviewDate;
 	@ManyToOne
-	@JsonBackReference
+//	@JsonBackReference(value = "member-reviews")
+	@JsonIgnore
 	private Member member;
 	@ManyToOne
-	@JsonBackReference
+	@JsonBackReference(value = "recipe-reviews")
 	private Recipe recipe;
-
+	
 	public Review() {
 		setReviewDate(LocalDate.now());
 	}
-
+	
 	public Review(int rating, String comment, Member member, Recipe recipe) {
 		this.rating = rating;
 		this.comment = comment;
 		this.member = member;
 		this.recipe = recipe;
 	}
-
+	
 	// getter and setter
 	public Integer getId() {
 		return id;
