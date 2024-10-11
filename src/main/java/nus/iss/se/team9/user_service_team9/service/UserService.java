@@ -71,4 +71,8 @@ public class UserService {
     public Status getMemberStatus(Member member) {
         return member.getMemberStatus();
     }
+
+    public boolean CheckIfUsernameExist(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }

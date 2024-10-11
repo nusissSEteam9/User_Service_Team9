@@ -73,6 +73,13 @@ public class UserController {
         }
     }
 
+    @GetMapping("/validate-username/{username}")
+    public ResponseEntity<Boolean> checkUsernameExist(@PathVariable String username) {
+        System.out.println("Validate username");
+        boolean exists = userService.CheckIfUsernameExist(username);
+        return ResponseEntity.ok(exists);
+    }
+
     @GetMapping("/getAllMembersNotDeleted")
     public ResponseEntity<List<Member>> getAllMemberNotDeleted(){
         List<Member> members = userService.getAllMembersNotDeleted();
