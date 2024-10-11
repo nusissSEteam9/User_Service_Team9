@@ -20,7 +20,7 @@ public class UserService {
     @Autowired
     MemberRepository memberRepository;
     @Autowired
-    RecipeRepository recipeRepository;
+    private RecipeService recipeService;
 
 
     public void saveMember(Member member) {
@@ -50,19 +50,9 @@ public class UserService {
     }
 
     public Set<String> getRandomUniqueTags(int count) {
-        List<String> allTags = new ArrayList<>(getAllUniqueTags());
+        List<String> allTags = new ArrayList<>(recipeService.getAllUniqueTags());
         Collections.shuffle(allTags, new Random());
         return allTags.stream().limit(count).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    // get all unique tags
-    public Set<String> getAllUniqueTags() {
-        List<String> tagLists = recipeRepository.findAllDistinctTags();
-        Set<String> uniqueTags = new HashSet<>();
-        for (String tags : tagLists) {
-            uniqueTags.addAll(Arrays.asList(tags.split(",")));
-        }
-        return uniqueTags;
     }
 
     public User getUserByUsername(String username) {

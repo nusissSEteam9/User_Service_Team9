@@ -67,7 +67,7 @@ public class UserController {
             }
             return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             responseBody.put("error", "Internal server error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
         }
@@ -79,14 +79,35 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-    // 查看用户的profile
+    @PostMapping("/member/{memberId}/saveRecipe")
+    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
+        Member member = userService.getMemberById(memberId);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        }
+        member.getSavedRecipes().add(recipe);
+        userService.saveMember(member);
+        return ResponseEntity.ok("Recipe saved successfully");
+    }
+
+    @PostMapping("/member/{memberId}/removeRecipe")
+    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
+        Member member = userService.getMemberById(memberId);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        }
+        member.getSavedRecipes().remove(recipe);
+        userService.saveMember(member);
+        return ResponseEntity.ok("Recipe removed successfully");
+    }
+
     @GetMapping("/profile/{id}")
     public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId,@RequestHeader("Authorization") String token) {
         Member member = userService.getMemberById(memberId);
         if (member == null || member.getMemberStatus() == Status.DELETED) {
             return ResponseEntity.status(404).body(Map.of("message", "User not found or has been deleted."));
         }
-        List<Recipe> publicRecipes = recipeService.getAllRecipesByMember(member, Status.PUBLIC);
+        List<Recipe> publicRecipes = recipeService.getPublicRecipesByMember(member);
         Boolean isAdmin = jwtService.extractRole(token).equals("admin");
         Map<String, Object> response = new HashMap<>();
         response.put("member", member);
@@ -160,6 +181,7 @@ public class UserController {
     @GetMapping("/member/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable Integer id) {
         Member member = userService.getMemberById(id);
+        System.out.println(member);
         if (member != null) {
             return ResponseEntity.ok(member);
         } else {

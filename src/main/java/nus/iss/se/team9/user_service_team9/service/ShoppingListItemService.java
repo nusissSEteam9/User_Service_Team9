@@ -18,7 +18,6 @@ public class ShoppingListItemService {
 		return shoppingListItemRepo.save(item);
 	}
 
-	
 	// get specific shoppingListItem by id
 	public ShoppingListItem getShoppingListItemById(Integer id) {
 		Optional<ShoppingListItem> shoppingListItem = shoppingListItemRepo.findById(id);
