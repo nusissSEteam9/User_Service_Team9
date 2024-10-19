@@ -85,11 +85,17 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-    @PostMapping("/member/{memberId}/saveRecipe")
-    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
+    @PostMapping("/member/saveRecipe")
+    public ResponseEntity<String> addRecipeToSaved(@RequestBody Map<String, Object> request) {
+        Integer memberId = (Integer) request.get("memberId");
+        Integer recipeId = (Integer) request.get("recipeId");
         Member member = userService.getMemberById(memberId);
         if (member == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        }
+        Recipe recipe = recipeService.getRecipeById(recipeId);
+        if (recipe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recipe not found");
         }
         member.getSavedRecipes().add(recipe);
         userService.saveMember(member);
