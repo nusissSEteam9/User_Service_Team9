@@ -6,6 +6,10 @@ import nus.iss.se.team9.user_service_team9.model.Recipe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+<<<<<<< HEAD
+import org.springframework.http.HttpEntity;
+=======
+>>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -95,4 +100,42 @@ public class RecipeService {
             throw new RuntimeException("Unexpected error: " + e.getMessage());
         }
     }
+<<<<<<< HEAD
+
+    public String createRecipe(Recipe recipe, Member member) {
+        String url = recipeServiceUrl + "/create";
+
+        // 准备请求体
+        HashMap<Object, Object> payload = new HashMap<>();
+        payload.put("name", recipe.getName());
+        payload.put("description", recipe.getDescription());
+        payload.put("servings", recipe.getServings());
+        payload.put("preparationTime", recipe.getPreparationTime());
+        payload.put("notes", recipe.getNotes());
+        payload.put("status", recipe.getStatus().toString());
+        payload.put("image", recipe.getImage());
+        payload.put("steps", recipe.getSteps());
+        payload.put("tags", recipe.getTags());
+
+
+        try {
+            HttpEntity<HashMap<Object, Object>> requestEntity = new HttpEntity<>(payload);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return "Recipe created successfully"; // 返回成功消息
+            } else {
+                throw new RuntimeException("Failed to create recipe");
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Error while adding recipe: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error: " + e.getMessage());
+        }
+    }
+
+
+=======
+>>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 }
