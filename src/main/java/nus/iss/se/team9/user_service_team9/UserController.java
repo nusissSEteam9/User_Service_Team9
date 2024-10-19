@@ -85,7 +85,6 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-<<<<<<< HEAD
     @PostMapping("/member/{memberId}/saveRecipe/{recipeId}")
     public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(memberId);
@@ -113,26 +112,6 @@ public class UserController {
         }
         member.getSavedRecipes().remove(recipe);
 
-=======
-    @PostMapping("/member/{memberId}/saveRecipe")
-    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
-        Member member = userService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
-        }
-        member.getSavedRecipes().add(recipe);
-        userService.saveMember(member);
-        return ResponseEntity.ok("Recipe saved successfully");
-    }
-
-    @PostMapping("/member/{memberId}/removeRecipe")
-    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
-        Member member = userService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
-        }
-        member.getSavedRecipes().remove(recipe);
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
         userService.saveMember(member);
         return ResponseEntity.ok("Recipe removed successfully");
     }
@@ -384,7 +363,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    // Add shopping list item manually  /
+    // Add shopping list item manually
     @PostMapping("/member/shoppingList/addItem")
     public ResponseEntity<Map<String, Object>> addItem(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
         String ingredientName = (String) payload.get("ingredientName");

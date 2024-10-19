@@ -6,10 +6,7 @@ import nus.iss.se.team9.user_service_team9.model.Recipe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-<<<<<<< HEAD
 import org.springframework.http.HttpEntity;
-=======
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,7 +97,6 @@ public class RecipeService {
             throw new RuntimeException("Unexpected error: " + e.getMessage());
         }
     }
-<<<<<<< HEAD
 
     public String createRecipe(Recipe recipe, Member member) {
         String url = recipeServiceUrl + "/create";
@@ -136,6 +132,4 @@ public class RecipeService {
     }
 
 
-=======
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 }

@@ -40,7 +40,6 @@ public class Member extends User {
 	@JsonIgnore
 	private List<ShoppingListItem> shoppingList;
 
-<<<<<<< HEAD
 //	@ManyToMany(mappedBy = "membersWhoSave")
 //	@JsonBackReference(value = "members-savedRecipes")
 	@ManyToMany
@@ -49,10 +48,6 @@ public class Member extends User {
 			joinColumns = @JoinColumn(name = "members_who_save_id"),
 			inverseJoinColumns = @JoinColumn(name = "saved_recipes_id")
 	)
-=======
-	@ManyToMany(mappedBy = "membersWhoSave")
-//	@JsonBackReference(value = "members-savedRecipes")
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 	@JsonIgnore
 	private List<Recipe> savedRecipes;
 
