@@ -28,6 +28,34 @@ public class UserController {
     @Autowired
     private ShoppingListItemService shoppingListItemService;
 
+    // action for test
+    @GetMapping("/member")
+    public ResponseEntity<?> getMember(@RequestHeader("Authorization") String token) {
+        Integer id = jwtService.extractId(token);
+        if (id == null) {
+            return ResponseEntity.status(401).body("User is not logged in.");
+        }
+        return ResponseEntity.ok(userService.getMemberById(id));
+    }
+    @GetMapping("/health")
+    public String checkHealth(){
+        return "API is connected";
+    }
+
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId,@RequestHeader("Authorization") String token) {
+        Member member = userService.getMemberById(memberId);
+        if (member == null || member.getMemberStatus() == Status.DELETED) {
+            return ResponseEntity.status(404).body(Map.of("message", "User not found or has been deleted."));
+        }
+        List<Recipe> publicRecipes = recipeService.getPublicRecipesByMember(member);
+        Boolean isAdmin = jwtService.extractRole(token).equals("admin");
+        Map<String, Object> response = new HashMap<>();
+        response.put("member", member);
+        response.put("publicRecipes", publicRecipes);
+        response.put("ifAdmin", isAdmin);
+        return ResponseEntity.ok(response);
+    }
     @PostMapping("/create")
     public ResponseEntity<Integer> createMember(@RequestBody Map<String, String> memberData) {
         try {
@@ -40,7 +68,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
     @PostMapping("/validate-login")
     public ResponseEntity<Map<String, Object>> validateLogin(@RequestBody Map<String, String> credentials) {
         Map<String, Object> responseBody = new HashMap<>();
@@ -71,19 +98,18 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
         }
     }
-
     @GetMapping("/validate-username/{username}")
     public ResponseEntity<Boolean> checkUsernameExist(@PathVariable String username) {
         System.out.println("Validate username");
         boolean exists = userService.CheckIfUsernameExist(username);
         return ResponseEntity.ok(exists);
     }
-
     @GetMapping("/getAllMembersNotDeleted")
     public ResponseEntity<List<Member>> getAllMemberNotDeleted(){
         List<Member> members = userService.getAllMembersNotDeleted();
         return ResponseEntity.ok(members);
     }
+
 
     @PostMapping("/member/{memberId}/saveRecipe/{recipeId}")
     public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
@@ -100,7 +126,6 @@ public class UserController {
 
         return ResponseEntity.ok("Recipe saved successfully");
     }
-
     @PostMapping("/member/{memberId}/removeSavedRecipe/{recipeId}")
     public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(memberId);
@@ -114,32 +139,6 @@ public class UserController {
         userService.saveMember(member);
         return ResponseEntity.ok("Recipe removed successfully");
     }
-
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<Map<String, Object>> viewUserProfile(@PathVariable("id") Integer memberId,@RequestHeader("Authorization") String token) {
-        Member member = userService.getMemberById(memberId);
-        if (member == null || member.getMemberStatus() == Status.DELETED) {
-            return ResponseEntity.status(404).body(Map.of("message", "User not found or has been deleted."));
-        }
-        List<Recipe> publicRecipes = recipeService.getPublicRecipesByMember(member);
-        Boolean isAdmin = jwtService.extractRole(token).equals("admin");
-        Map<String, Object> response = new HashMap<>();
-        response.put("member", member);
-        response.put("publicRecipes", publicRecipes);
-        response.put("ifAdmin", isAdmin);
-        return ResponseEntity.ok(response);
-    }
-
-    // action for test
-    @GetMapping("/member")
-    public ResponseEntity<?> getMember(@RequestHeader("Authorization") String token) {
-        Integer id = jwtService.extractId(token);
-        if (id == null) {
-            return ResponseEntity.status(401).body("User is not logged in.");
-        }
-        return ResponseEntity.ok(userService.getMemberById(id));
-    }
-
     @GetMapping("/member/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable Integer id) {
         Member member = userService.getMemberById(id);
@@ -150,7 +149,6 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
-
     @DeleteMapping("/member/{id}")
     public ResponseEntity<Void> deleteMemberById(@PathVariable Integer id) {
         Member member = userService.getMemberById(id);
@@ -162,8 +160,6 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    // Member
     @GetMapping("/member/savedList")
     public ResponseEntity<?> showSavedList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -174,7 +170,6 @@ public class UserController {
         List<Recipe> recipes = member.getSavedRecipes();
         return ResponseEntity.ok(recipes);
     }
-
     @GetMapping("/member/myRecipeList")
     public ResponseEntity<?> showMyRecipeList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -187,7 +182,6 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(recipes);
     }
-
     @GetMapping("/member/myReview")
     public ResponseEntity<?> showMyReviewList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -198,7 +192,6 @@ public class UserController {
         List<Review> reviews = member.getReviews();
         return ResponseEntity.ok(reviews);
     }
-
     @GetMapping("/member/myProfile")
     public ResponseEntity<Member> viewMemberProfile(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -211,7 +204,6 @@ public class UserController {
         }
         return ResponseEntity.ok(member);
     }
-
     @PostMapping("/member/saveProfile")
     public ResponseEntity<String> saveProfile(@RequestBody @Valid Member member, BindingResult bindingResult, @RequestHeader("Authorization") String token) {
         if (bindingResult.hasErrors()) {
