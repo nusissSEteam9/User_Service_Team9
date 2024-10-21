@@ -95,22 +95,20 @@ public class Recipe {
 	@JsonBackReference(value = "member-addedRecipes")
 	private Member member;
 
-<<<<<<< HEAD
-//	@ManyToMany
-	@ManyToMany(mappedBy = "savedRecipes")
-//	@JoinTable(
-//			name = "recipe_members_who_save",
-//			joinColumns = @JoinColumn(name = "saved_recipes_id"),
-//			inverseJoinColumns = @JoinColumn(name = "members_who_save_id")
-//	)
-=======
+////	@ManyToMany
+//	@ManyToMany(mappedBy = "savedRecipes")
+////	@JoinTable(
+////			name = "recipe_members_who_save",
+////			joinColumns = @JoinColumn(name = "saved_recipes_id"),
+////			inverseJoinColumns = @JoinColumn(name = "members_who_save_id")
+////	)
 	@ManyToMany
 	@JoinTable(
 			name = "recipe_members_who_save",
 			joinColumns = @JoinColumn(name = "saved_recipes_id"),
 			inverseJoinColumns = @JoinColumn(name = "members_who_save_id")
 	)
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
+//>>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 //	@JsonManagedReference(value = "members-savedRecipes")
 	@JsonIgnore
 	private List<Member> membersWhoSave;
@@ -122,10 +120,10 @@ public class Recipe {
 		tags = new ArrayList<>();
 		reviews = new ArrayList<>();
 		reportsToRecipe = new ArrayList<>();
-<<<<<<< HEAD
-		membersWhoSave = new ArrayList<>();
-=======
->>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
+//<<<<<<< HEAD
+//		membersWhoSave = new ArrayList<>();
+//=======
+//>>>>>>> acc1341adb6c163f373d1747775b446c06b0b024
 		numberOfSaved = 0;
 		numberOfRating = 0;
 		rating = 0.0;
