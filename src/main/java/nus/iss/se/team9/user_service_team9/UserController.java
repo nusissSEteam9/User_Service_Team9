@@ -85,24 +85,33 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-    @PostMapping("/member/{memberId}/saveRecipe")
-    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
+    @PostMapping("/member/{memberId}/saveRecipe/{recipeId}")
+    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        Recipe recipe = recipeService.getRecipeById(recipeId);
+
+        if (member == null || recipe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
         }
+
         member.getSavedRecipes().add(recipe);
+        // inversion of control, watch out many-to-many relationship
         userService.saveMember(member);
+
         return ResponseEntity.ok("Recipe saved successfully");
     }
 
-    @PostMapping("/member/{memberId}/removeRecipe")
-    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @RequestBody Recipe recipe) {
+
+    @PostMapping("/member/{memberId}/removeSavedRecipe/{recipeId}")
+    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(memberId);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+        Recipe recipe = recipeService.getRecipeById(recipeId);
+
+        if (member == null || recipe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
         }
         member.getSavedRecipes().remove(recipe);
+
         userService.saveMember(member);
         return ResponseEntity.ok("Recipe removed successfully");
     }
@@ -354,7 +363,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    // Add shopping list item manually  /
+    // Add shopping list item manually
     @PostMapping("/member/shoppingList/addItem")
     public ResponseEntity<Map<String, Object>> addItem(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
         String ingredientName = (String) payload.get("ingredientName");

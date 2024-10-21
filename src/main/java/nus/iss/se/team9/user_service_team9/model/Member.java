@@ -1,6 +1,5 @@
 package nus.iss.se.team9.user_service_team9.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -41,17 +40,14 @@ public class Member extends User {
 	@JsonIgnore
 	private List<ShoppingListItem> shoppingList;
 
-
-////	@ManyToMany(mappedBy = "membersWhoSave")
-////	@JsonBackReference(value = "members-savedRecipes")
-//	@ManyToMany
-//	@JoinTable(
-//			name = "recipe_members_who_save",
-//			joinColumns = @JoinColumn(name = "members_who_save_id"),
-//			inverseJoinColumns = @JoinColumn(name = "saved_recipes_id")
-//	)
-	@ManyToMany(mappedBy = "membersWhoSave")
+//	@ManyToMany(mappedBy = "membersWhoSave")
 //	@JsonBackReference(value = "members-savedRecipes")
+	@ManyToMany
+	@JoinTable(
+			name = "recipe_members_who_save",
+			joinColumns = @JoinColumn(name = "members_who_save_id"),
+			inverseJoinColumns = @JoinColumn(name = "saved_recipes_id")
+	)
 	@JsonIgnore
 	private List<Recipe> savedRecipes;
 
