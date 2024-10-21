@@ -42,16 +42,6 @@ public class UserService {
         return memberRepository.findByMemberStatusNot(Status.DELETED);
     }
 
-    public boolean checkIfUserExist(String username) {
-        return userRepository.findByUsername(username) != null;
-    }
-
-    public Set<String> getRandomUniqueTags(int count) {
-        List<String> allTags = new ArrayList<>(recipeService.getAllUniqueTags());
-        Collections.shuffle(allTags, new Random());
-        return allTags.stream().limit(count).collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -63,10 +53,6 @@ public class UserService {
             return false;
         }
         return false;
-    }
-
-    public Status getMemberStatus(Member member) {
-        return member.getMemberStatus();
     }
 
     public boolean CheckIfUsernameExist(String username) {
