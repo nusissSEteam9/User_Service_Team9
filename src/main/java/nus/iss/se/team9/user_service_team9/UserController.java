@@ -101,7 +101,6 @@ public class UserController {
         return ResponseEntity.ok("Recipe saved successfully");
     }
 
-
     @PostMapping("/member/{memberId}/removeSavedRecipe/{recipeId}")
     public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(memberId);
@@ -128,58 +127,6 @@ public class UserController {
         response.put("member", member);
         response.put("publicRecipes", publicRecipes);
         response.put("ifAdmin", isAdmin);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/checkIfUsernameAvailable")
-    public ResponseEntity<Map<String, Object>> checkIfUsernameAvailable(@RequestBody Map<String, Object> payload) {
-        String username = (String) payload.get("username");
-        Boolean userAlrExists = userService.checkIfUserExist(username);
-        Map<String, Object> response = new HashMap<>();
-        response.put("userAlrExists", userAlrExists);
-        return ResponseEntity.ok(response);
-    }
-
-    // Set preferences
-    @GetMapping("/setPreference")
-    public ResponseEntity<Set<String>> setPreference() {
-        Set<String> tags = userService.getRandomUniqueTags(7);
-        return ResponseEntity.ok(tags);
-    }
-
-    @PostMapping("/setPreference")
-    public ResponseEntity<String> receivePreference(@RequestParam(value = "tags", required = false) List<String> tags,@RequestHeader("Authorization") String token, HttpSession session) {
-        List<String> oldTags = (List<String>) session.getAttribute("tags");
-        Member member = userService.getMemberById(jwtService.extractId(token));
-        if (oldTags == null) {
-            member.setPreferenceList(tags);
-        } else {
-            Set<String> selectedTags = new HashSet<>(oldTags);
-            selectedTags.addAll(tags);
-            List<String> combinedTags = new ArrayList<>(selectedTags);
-            member.setPreferenceList(combinedTags);
-        }
-        userService.saveMember(member);
-        return ResponseEntity.ok("Preferences updated");
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<Map<String, Object>> refreshTags(@RequestParam("tags") List<String> tags, HttpSession session) {
-        List<String> oldTags = (List<String>) session.getAttribute("tags");
-        Set<String> newTags;
-
-        if (oldTags == null) {
-            session.setAttribute("tags", tags);
-        } else {
-            Set<String> selectedTags = new HashSet<>(oldTags);
-            selectedTags.addAll(tags);
-            List<String> combinedTags = new ArrayList<>(selectedTags);
-            session.setAttribute("tags", combinedTags);
-        }
-        newTags = userService.getRandomUniqueTags(7);
-        Map<String, Object> response = new HashMap<>();
-        response.put("updatedTags", session.getAttribute("tags"));
-        response.put("newTags", newTags);
         return ResponseEntity.ok(response);
     }
 
