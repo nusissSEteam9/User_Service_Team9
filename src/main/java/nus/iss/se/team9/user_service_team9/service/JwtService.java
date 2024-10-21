@@ -10,27 +10,19 @@ import org.springframework.stereotype.Service;
 public class JwtService {
     @Value("${jwt.secret}")
     private String jwtSecret;
-
-    // 解析 JWT 并返回用户名
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
-
-    // 解析 JWT 并返回角色
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
-    // 解析 JWT 并返回 ID
     public Integer extractId(String token) {
         return extractClaim(token, claims -> claims.get("id", Integer.class));
     }
-    // 通用方法，提取 JWT 中的指定声明（Claim）
     private <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
-
-    // 使用 JWT 密钥解析所有声明
     private Claims extractAllClaims(String token) {
         try {
             if (token.startsWith("Bearer ")) {
