@@ -265,17 +265,6 @@ public class UserController {
         return ResponseEntity.ok(shoppingList);
     }
 
-    // Update shopping list item status
-    @PostMapping("/member/shoppingList/updateCheckedStatus")
-    public ResponseEntity<Void> updateCheckedStatus(@RequestBody Map<String, Object> payload) {
-        int id = (int) payload.get("id");
-        boolean isChecked = (boolean) payload.get("isChecked");
-        ShoppingListItem shoppingListItem = shoppingListItemService.getShoppingListItemById(id);
-        shoppingListItem.setChecked(isChecked);
-        shoppingListItemService.saveShoppingListItem(shoppingListItem);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/member/shoppingList/edit")
     public ResponseEntity<List<ShoppingListItem>> editShoppingList(@RequestHeader("Authorization") String token) {
         Member member = userService.getMemberById(jwtService.extractId(token));
@@ -286,19 +275,10 @@ public class UserController {
     // Clear shopping list items
     @PostMapping("/member/shoppingList/clearItems")
     public ResponseEntity<Void> clearItems(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
-        String message = (String) payload.get("message");
+        List<Integer> ids= (List<Integer>) payload.get("ids");
         Member member = userService.getMemberById(jwtService.extractId(token));
-        List<ShoppingListItem> shoppingList = member.getShoppingList();
-
-        Iterator<ShoppingListItem> iterator = shoppingList.iterator();
-        while (iterator.hasNext()) {
-            ShoppingListItem item = iterator.next();
-            if ((message.equals("clearChecked") && item.isChecked()) || message.equals("clearAll")) {
-                iterator.remove();
-                shoppingListItemService.deleteShoppingListItem(item);
-            }
-        }
-
+        List<ShoppingListItem> itemsToDelete = shoppingListItemService.getShoppingListItemsByIdsAndMemberId(ids, member.getId());
+        shoppingListItemService.deleteShoppingListItems(itemsToDelete);
         return ResponseEntity.ok().build();
     }
 
