@@ -6,6 +6,7 @@ import nus.iss.se.team9.user_service_team9.repo.ShoppingListItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,7 +26,12 @@ public class ShoppingListItemService {
 	};
 	
 	// delete specific recipe by shoppingListItem
-	public void deleteShoppingListItem(ShoppingListItem shoppingListItem) {
-		shoppingListItemRepo.delete(shoppingListItem);
+	public List<ShoppingListItem> getShoppingListItemsByIdsAndMemberId(List<Integer> ids, Integer memberId) {
+		return shoppingListItemRepo.findByIdInAndMemberId(ids, memberId);
 	}
+
+	public void deleteShoppingListItems(List<ShoppingListItem> items) {
+		shoppingListItemRepo.deleteAll(items);
+	}
+
 }
