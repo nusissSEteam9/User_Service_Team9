@@ -1,7 +1,7 @@
 package nus.iss.se.team9.user_service_team9.service;
 
 import jakarta.transaction.Transactional;
-import nus.iss.se.team9.user_service_team9.model.ShoppingListItem;
+import nus.iss.se.team9.user_service_team9.entity.ShoppingListItem;
 import nus.iss.se.team9.user_service_team9.repo.ShoppingListItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

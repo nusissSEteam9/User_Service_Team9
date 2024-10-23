@@ -1,8 +1,10 @@
 package nus.iss.se.team9.user_service_team9;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import nus.iss.se.team9.user_service_team9.model.*;
+import nus.iss.se.team9.user_service_team9.entity.*;
+import nus.iss.se.team9.user_service_team9.model.AddIngredientForm;
+import nus.iss.se.team9.user_service_team9.model.Recipe;
+import nus.iss.se.team9.user_service_team9.model.Status;
 import nus.iss.se.team9.user_service_team9.service.JwtService;
 import nus.iss.se.team9.user_service_team9.service.RecipeService;
 import nus.iss.se.team9.user_service_team9.service.ShoppingListItemService;
@@ -120,8 +122,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
         }
 
-        member.getSavedRecipes().add(recipe);
-        // inversion of control, watch out many-to-many relationship
+        member.getSavedRecipes().add(recipeId);
         userService.saveMember(member);
 
         return ResponseEntity.ok("Recipe saved successfully");
@@ -167,7 +168,11 @@ public class UserController {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
         Member member = userService.getMemberById(id);
-        List<Recipe> recipes = member.getSavedRecipes();
+        List<Integer> recipeIds = member.getSavedRecipes();
+        List<Recipe> recipes =new ArrayList<>();
+        for (Integer i : recipeIds) {
+            recipes.add(recipeService.getRecipeById(i));
+        }
         return ResponseEntity.ok(recipes);
     }
     @GetMapping("/member/myRecipeList")
@@ -177,7 +182,12 @@ public class UserController {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
         Member member = userService.getMemberById(id);
-        List<Recipe> recipes = member.getAddedRecipes().stream()
+        List<Integer> recipeIds = member.getAddedRecipes();
+        List<Recipe> recipes =new ArrayList<>();
+        for (Integer i : recipeIds) {
+            recipes.add(recipeService.getRecipeById(i));
+        }
+        recipes = recipes.stream()
                 .filter(r -> r.getStatus() != Status.DELETED)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(recipes);
