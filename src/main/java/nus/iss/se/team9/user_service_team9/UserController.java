@@ -2,6 +2,7 @@ package nus.iss.se.team9.user_service_team9;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import nus.iss.se.team9.user_service_team9.dto.ReviewDTO;
 import nus.iss.se.team9.user_service_team9.model.*;
 import nus.iss.se.team9.user_service_team9.service.JwtService;
 import nus.iss.se.team9.user_service_team9.service.RecipeService;
@@ -182,6 +183,7 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(recipes);
     }
+
     @GetMapping("/member/myReview")
     public ResponseEntity<?> showMyReviewList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -189,9 +191,18 @@ public class UserController {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
         Member member = userService.getMemberById(id);
-        List<Review> reviews = member.getReviews();
-        return ResponseEntity.ok(reviews);
+        List<ReviewDTO> reviewDTOs = member.getReviews().stream()
+                .map(review -> new ReviewDTO(
+                        review.getId(),
+                        review.getRecipe().getName(),
+                        review.getRecipe().getId(),
+                        review.getRating(),
+                        review.getComment()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reviewDTOs);
     }
+
     @GetMapping("/member/myProfile")
     public ResponseEntity<Member> viewMemberProfile(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
