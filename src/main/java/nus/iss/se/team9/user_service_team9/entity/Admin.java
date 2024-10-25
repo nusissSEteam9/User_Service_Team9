@@ -1,4 +1,4 @@
-package nus.iss.se.team9.user_service_team9.model;
+package nus.iss.se.team9.user_service_team9.entity;
 
 import jakarta.persistence.Entity;
 

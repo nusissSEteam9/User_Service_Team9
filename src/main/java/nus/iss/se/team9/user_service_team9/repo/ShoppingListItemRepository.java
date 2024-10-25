@@ -1,6 +1,6 @@
 package nus.iss.se.team9.user_service_team9.repo;
 
-import nus.iss.se.team9.user_service_team9.model.ShoppingListItem;
+import nus.iss.se.team9.user_service_team9.entity.ShoppingListItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

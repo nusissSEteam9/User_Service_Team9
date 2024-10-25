@@ -1,10 +1,10 @@
-package nus.iss.se.team9.user_service_team9.model;
+package nus.iss.se.team9.user_service_team9.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import nus.iss.se.team9.user_service_team9.model.Status;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -32,37 +32,27 @@ public class Member extends User {
 	@Column
 	@Enumerated(EnumType.STRING)
 	private Status memberStatus;
-	@ElementCollection
-	private List<String> preferenceList;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-//	@JsonManagedReference(value = "member-shoppingList")
-	@JsonIgnore
+	@JsonManagedReference(value = "member-shoppingList")
 	private List<ShoppingListItem> shoppingList;
 
-//	@ManyToMany(mappedBy = "membersWhoSave")
-//	@JsonBackReference(value = "members-savedRecipes")
-	@ManyToMany
-	@JoinTable(
-			name = "recipe_members_who_save",
-			joinColumns = @JoinColumn(name = "members_who_save_id"),
-			inverseJoinColumns = @JoinColumn(name = "saved_recipes_id")
-	)
-	@JsonIgnore
-	private List<Recipe> savedRecipes;
+	@ElementCollection
+	@CollectionTable(name = "member_saved_recipes", joinColumns = @JoinColumn(name = "member_id"))
+	@Column(name = "recipe_id")
+	private List<Integer> savedRecipes;
+
+	@ElementCollection
+	@CollectionTable(name = "member_added_recipes", joinColumns = @JoinColumn(name = "member_id"))
+	@Column(name = "recipe_id")
+	private List<Integer> addedRecipes;
 
 	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference(value = "member-addedRecipes")
-	private List<Recipe> addedRecipes;
-
-	@OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-//	@JsonManagedReference (value = "member-reviews")
-	@JsonIgnore
+	@JsonManagedReference (value = "member-reviews")
 	private List<Review> reviews;
 
 	@OneToMany(mappedBy = "member")
-//	@JsonManagedReference (value = "member-reports")
-	@JsonIgnore
+	@JsonManagedReference (value = "member-reports")
 	private List<Report> reports;
 
 	@OneToMany(mappedBy = "memberReported")

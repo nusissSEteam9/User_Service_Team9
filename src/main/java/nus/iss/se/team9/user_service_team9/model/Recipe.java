@@ -1,8 +1,6 @@
 package nus.iss.se.team9.user_service_team9.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -17,11 +15,12 @@ import java.util.Objects;
 
 @Setter
 @Getter
-@Entity
 public class Recipe {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
+	@Column
+	private Integer createdBy;
 	@Column
 	@NotBlank(message = "Name is required")
 	private String name;
@@ -72,7 +71,6 @@ public class Recipe {
 	@ElementCollection
 	private List<String> tags;
 
-
 	@ManyToMany
 	@JoinTable(
 			name = "recipe_ingredients",
@@ -82,57 +80,45 @@ public class Recipe {
 	@JsonIgnore
 	private List<Ingredient> ingredients;
 
-	@OneToMany(mappedBy = "recipe")
-	@JsonManagedReference(value = "recipe-reviews")
-	private List<Review> reviews;
+	@ElementCollection
+	@CollectionTable(name = "recipe_reviews", joinColumns = @JoinColumn(name = "recipe_id"))
+	@Column(name = "review_id")
+	private List<Integer> reviews;
 
-	@OneToMany(mappedBy = "recipeReported")
-	@JsonManagedReference(value = "recipe-reportsToRecipe")
-	private List<RecipeReport> reportsToRecipe;
+	@ElementCollection
+	@CollectionTable(name = "recipe_reports", joinColumns = @JoinColumn(name = "recipe_id"))
+	@Column(name = "report_id")
+	private List<Integer> reportsToRecipe;
 
-	@ManyToOne
-	@JoinColumn(name = "member_id")
-	@JsonBackReference(value = "member-addedRecipes")
-	private Member member;
-
-//	@ManyToMany
-	@ManyToMany(mappedBy = "savedRecipes")
-//	@JoinTable(
-//			name = "recipe_members_who_save",
-//			joinColumns = @JoinColumn(name = "saved_recipes_id"),
-//			inverseJoinColumns = @JoinColumn(name = "members_who_save_id")
-//	)
-//	@JsonManagedReference(value = "members-savedRecipes")
-	@JsonIgnore
-	private List<Member> membersWhoSave;
-
-
+	@ElementCollection
+	@CollectionTable(name = "recipe_member_ids", joinColumns = @JoinColumn(name = "recipe_id"))
+	@Column(name = "member_id")
+	private List<Integer> memberIdsWhoSave;
 
 	public Recipe() {
 		ingredients = new ArrayList<>();
 		tags = new ArrayList<>();
 		reviews = new ArrayList<>();
 		reportsToRecipe = new ArrayList<>();
-		membersWhoSave = new ArrayList<>();
 		numberOfSaved = 0;
 		numberOfRating = 0;
 		rating = 0.0;
 		submittedDate = LocalDate.now();
 	}
 
-	public Recipe(String name, String description, Member member) {
+	public Recipe(String name, String description, Integer memberId) {
 		this();
 		this.name = name;
 		this.description = description;
-		this.member = member;
+		this.createdBy = memberId;
 		status = Status.PUBLIC;
 		steps = new ArrayList<>();
 	}
 
 	public Recipe(String name, String description, double rating, int preparationTime, int servings,
-				  int numberOfSteps, Member member, double calories, double protein, double carbohydrate, double sugar,
-				  double sodium, double fat, double saturatedFat, List<String> steps) {
-		this(name, description, member);
+                  int numberOfSteps, Integer memberId, double calories, double protein, double carbohydrate, double sugar,
+                  double sodium, double fat, double saturatedFat, List<String> steps) {
+		this(name, description, memberId);
 		this.rating = rating;
 		this.numberOfSaved = 0;
 		this.preparationTime = preparationTime;
