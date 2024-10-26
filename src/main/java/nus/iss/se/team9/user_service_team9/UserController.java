@@ -116,12 +116,19 @@ public class UserController {
                                                    @PathVariable Integer recipeId) {
         Member member = userService.getMemberById(jwtService.extractId(token));
         Recipe recipe = recipeService.getRecipeById(recipeId);
+
         if (member == null || recipe == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
         }
-        member.getSavedRecipes().add(recipe);
-        userService.saveMember(member);
-        return ResponseEntity.ok("Recipe saved successfully");
+
+        if (!member.getSavedRecipes().contains(recipe)) {
+            member.getSavedRecipes().add(recipe);
+            userService.saveMember(member);
+            recipeService.updateRecipeNumberOfSaved(recipeId, "save");
+            return ResponseEntity.ok("Recipe saved successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Recipe already saved");
+        }
     }
 
     @PostMapping("/member/removeSavedRecipe/{recipeId}")
@@ -133,9 +140,16 @@ public class UserController {
         if (member == null || recipe == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
         }
-        member.getSavedRecipes().remove(recipe);
-        userService.saveMember(member);
-        return ResponseEntity.ok("Recipe removed successfully");
+
+        if (member.getSavedRecipes().contains(recipe)) {
+            member.getSavedRecipes().remove(recipe);
+            userService.saveMember(member);
+            System.out.println(recipe.getNumberOfSaved());
+            recipeService.updateRecipeNumberOfSaved(recipeId, "remove");
+            return ResponseEntity.ok("Recipe removed successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Recipe not found in saved list");
+        }
     }
 
     @GetMapping("/member/{id}")
