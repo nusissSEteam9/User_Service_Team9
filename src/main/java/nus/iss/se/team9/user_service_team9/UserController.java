@@ -111,35 +111,33 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-
-    @PostMapping("/member/{memberId}/saveRecipe/{recipeId}")
-    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
-        Member member = userService.getMemberById(memberId);
+    @PostMapping("/member/saveRecipe/{recipeId}")
+    public ResponseEntity<String> addRecipeToSaved(@RequestHeader("Authorization") String token,
+                                                   @PathVariable Integer recipeId) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
         Recipe recipe = recipeService.getRecipeById(recipeId);
-
         if (member == null || recipe == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
         }
-
         member.getSavedRecipes().add(recipe);
-        // inversion of control, watch out many-to-many relationship
         userService.saveMember(member);
-
         return ResponseEntity.ok("Recipe saved successfully");
     }
-    @PostMapping("/member/{memberId}/removeSavedRecipe/{recipeId}")
-    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
-        Member member = userService.getMemberById(memberId);
+
+    @PostMapping("/member/removeSavedRecipe/{recipeId}")
+    public ResponseEntity<String> removeRecipeFromSaved(@RequestHeader("Authorization") String token,
+                                                        @PathVariable Integer recipeId) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
         Recipe recipe = recipeService.getRecipeById(recipeId);
 
         if (member == null || recipe == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
         }
         member.getSavedRecipes().remove(recipe);
-
         userService.saveMember(member);
         return ResponseEntity.ok("Recipe removed successfully");
     }
+
     @GetMapping("/member/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable Integer id) {
         Member member = userService.getMemberById(id);
