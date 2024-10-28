@@ -111,6 +111,12 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
+    @GetMapping("/checkIfRecipeSaved")
+    public ResponseEntity<Boolean> checkIfRecipeSaved(@RequestParam("recipeId") Integer recipeId,@RequestHeader() String token) {
+        boolean isSaved = userService.CheckRecipeSavedStatus(recipeId, jwtService.extractId(token));
+        return new ResponseEntity<>(isSaved, HttpStatus.OK);
+    }
+
     @PostMapping("/member/saveRecipe/{recipeId}")
     public ResponseEntity<String> addRecipeToSaved(@RequestHeader("Authorization") String token,
                                                    @PathVariable Integer recipeId) {
