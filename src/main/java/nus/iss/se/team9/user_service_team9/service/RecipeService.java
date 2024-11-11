@@ -6,10 +6,7 @@ import nus.iss.se.team9.user_service_team9.model.Recipe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -74,6 +71,24 @@ public class RecipeService {
             }
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    public void updateRecipeNumberOfSaved(Integer recipeId, String operation) {
+        String url = recipeServiceUrl + "/setNumberOfSaved/" + recipeId;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<>(operation, headers);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Success: " + response.getBody());
+            } else {
+                System.out.println("Failed with status code: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            System.err.println("Error during REST call: " + e.getMessage());
         }
     }
 }

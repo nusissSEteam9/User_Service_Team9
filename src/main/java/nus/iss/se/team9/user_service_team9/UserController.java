@@ -2,6 +2,7 @@ package nus.iss.se.team9.user_service_team9;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import nus.iss.se.team9.user_service_team9.dto.ReviewDTO;
 import nus.iss.se.team9.user_service_team9.model.*;
 import nus.iss.se.team9.user_service_team9.service.JwtService;
 import nus.iss.se.team9.user_service_team9.service.RecipeService;
@@ -110,35 +111,53 @@ public class UserController {
         return ResponseEntity.ok(members);
     }
 
-
-    @PostMapping("/member/{memberId}/saveRecipe/{recipeId}")
-    public ResponseEntity<String> addRecipeToSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
-        Member member = userService.getMemberById(memberId);
-        Recipe recipe = recipeService.getRecipeById(recipeId);
-
-        if (member == null || recipe == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
-        }
-
-        member.getSavedRecipes().add(recipe);
-        // inversion of control, watch out many-to-many relationship
-        userService.saveMember(member);
-
-        return ResponseEntity.ok("Recipe saved successfully");
+    @GetMapping("/checkIfRecipeSaved")
+    public ResponseEntity<Boolean> checkIfRecipeSaved(@RequestParam("recipeId") Integer recipeId,@RequestHeader("Authorization") String token) {
+        boolean isSaved = userService.CheckRecipeSavedStatus(recipeId, jwtService.extractId(token));
+        return new ResponseEntity<>(isSaved, HttpStatus.OK);
     }
-    @PostMapping("/member/{memberId}/removeSavedRecipe/{recipeId}")
-    public ResponseEntity<String> removeRecipeFromSaved(@PathVariable Integer memberId, @PathVariable Integer recipeId) {
-        Member member = userService.getMemberById(memberId);
+
+    @PostMapping("/member/saveRecipe/{recipeId}")
+    public ResponseEntity<String> addRecipeToSaved(@RequestHeader("Authorization") String token,
+                                                   @PathVariable Integer recipeId) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
         Recipe recipe = recipeService.getRecipeById(recipeId);
 
         if (member == null || recipe == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
         }
-        member.getSavedRecipes().remove(recipe);
 
-        userService.saveMember(member);
-        return ResponseEntity.ok("Recipe removed successfully");
+        if (!member.getSavedRecipes().contains(recipe)) {
+            member.getSavedRecipes().add(recipe);
+            userService.saveMember(member);
+            recipeService.updateRecipeNumberOfSaved(recipeId, "save");
+            return ResponseEntity.ok("Recipe saved successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Recipe already saved");
+        }
     }
+
+    @PostMapping("/member/removeSavedRecipe/{recipeId}")
+    public ResponseEntity<String> removeRecipeFromSaved(@RequestHeader("Authorization") String token,
+                                                        @PathVariable Integer recipeId) {
+        Member member = userService.getMemberById(jwtService.extractId(token));
+        Recipe recipe = recipeService.getRecipeById(recipeId);
+
+        if (member == null || recipe == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
+        }
+
+        if (member.getSavedRecipes().contains(recipe)) {
+            member.getSavedRecipes().remove(recipe);
+            userService.saveMember(member);
+            System.out.println(recipe.getNumberOfSaved());
+            recipeService.updateRecipeNumberOfSaved(recipeId, "remove");
+            return ResponseEntity.ok("Recipe removed successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Recipe not found in saved list");
+        }
+    }
+
     @GetMapping("/member/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable Integer id) {
         Member member = userService.getMemberById(id);
@@ -182,6 +201,7 @@ public class UserController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(recipes);
     }
+
     @GetMapping("/member/myReview")
     public ResponseEntity<?> showMyReviewList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -189,9 +209,18 @@ public class UserController {
             return ResponseEntity.status(401).body("User is not logged in.");
         }
         Member member = userService.getMemberById(id);
-        List<Review> reviews = member.getReviews();
-        return ResponseEntity.ok(reviews);
+        List<ReviewDTO> reviewDTOs = member.getReviews().stream()
+                .map(review -> new ReviewDTO(
+                        review.getId(),
+                        review.getRecipe().getName(),
+                        review.getRecipe().getId(),
+                        review.getRating(),
+                        review.getComment()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reviewDTOs);
     }
+
     @GetMapping("/member/myProfile")
     public ResponseEntity<Member> viewMemberProfile(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
@@ -265,17 +294,6 @@ public class UserController {
         return ResponseEntity.ok(shoppingList);
     }
 
-    // Update shopping list item status
-    @PostMapping("/member/shoppingList/updateCheckedStatus")
-    public ResponseEntity<Void> updateCheckedStatus(@RequestBody Map<String, Object> payload) {
-        int id = (int) payload.get("id");
-        boolean isChecked = (boolean) payload.get("isChecked");
-        ShoppingListItem shoppingListItem = shoppingListItemService.getShoppingListItemById(id);
-        shoppingListItem.setChecked(isChecked);
-        shoppingListItemService.saveShoppingListItem(shoppingListItem);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/member/shoppingList/edit")
     public ResponseEntity<List<ShoppingListItem>> editShoppingList(@RequestHeader("Authorization") String token) {
         Member member = userService.getMemberById(jwtService.extractId(token));
@@ -286,19 +304,10 @@ public class UserController {
     // Clear shopping list items
     @PostMapping("/member/shoppingList/clearItems")
     public ResponseEntity<Void> clearItems(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization") String token) {
-        String message = (String) payload.get("message");
+        List<Integer> ids= (List<Integer>) payload.get("ids");
         Member member = userService.getMemberById(jwtService.extractId(token));
-        List<ShoppingListItem> shoppingList = member.getShoppingList();
-
-        Iterator<ShoppingListItem> iterator = shoppingList.iterator();
-        while (iterator.hasNext()) {
-            ShoppingListItem item = iterator.next();
-            if ((message.equals("clearChecked") && item.isChecked()) || message.equals("clearAll")) {
-                iterator.remove();
-                shoppingListItemService.deleteShoppingListItem(item);
-            }
-        }
-
+        List<ShoppingListItem> itemsToDelete = shoppingListItemService.getShoppingListItemsByIdsAndMemberId(ids, member.getId());
+        shoppingListItemService.deleteShoppingListItems(itemsToDelete);
         return ResponseEntity.ok().build();
     }
 

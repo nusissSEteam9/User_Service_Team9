@@ -36,4 +36,11 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'mysql:mysql-connector-java:8.0.33'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+}
+test {
+    useJUnitPlatform()
 }

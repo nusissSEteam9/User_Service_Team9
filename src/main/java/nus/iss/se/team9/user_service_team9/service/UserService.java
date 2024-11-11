@@ -58,4 +58,9 @@ public class UserService {
     public boolean CheckIfUsernameExist(String username) {
         return userRepository.existsByUsername(username);
     }
+    public boolean CheckRecipeSavedStatus(Integer recipeId, Integer memberId) {
+        Recipe recipe = recipeService.getRecipeById(recipeId);
+        Member member = this.getMemberById(memberId);
+        return member.getSavedRecipes().contains(recipe);
+    }
 }
