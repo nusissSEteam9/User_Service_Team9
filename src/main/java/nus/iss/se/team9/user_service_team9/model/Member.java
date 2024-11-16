@@ -70,7 +70,10 @@ public class Member extends User {
 	private List<MemberReport> reportsToMember;
 
 	public Member() {}
-
+	public Member(String username,String password,String email){
+		super(username, password);
+		this.setEmail(email);
+	}
 	public Member(String username, String password, double height, double weight, LocalDate birthdate, String gender, String email) {
 		super(username, password);
 		this.height = height;

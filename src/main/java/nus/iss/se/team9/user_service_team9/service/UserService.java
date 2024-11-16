@@ -1,6 +1,7 @@
 package nus.iss.se.team9.user_service_team9.service;
 
 import jakarta.transaction.Transactional;
+import nus.iss.se.team9.user_service_team9.UserFactory;
 import nus.iss.se.team9.user_service_team9.model.*;
 import nus.iss.se.team9.user_service_team9.repo.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +26,11 @@ public class UserService {
     }
 
     public Member createMember(String username, String password, String email){
-        Member newMember = new Member();
+        Member newMember = UserFactory.createMember(username,password,email);
         newMember.setMemberStatus(Status.CREATED);
-        newMember.setUsername(username);
-        newMember.setPassword(password);
-        newMember.setEmail(email);
         return memberRepository.save(newMember);
     }
+
     // Searching and Filtering methods
     public Member getMemberById(Integer id) {
         Optional<Member> member = memberRepository.findById(id);
