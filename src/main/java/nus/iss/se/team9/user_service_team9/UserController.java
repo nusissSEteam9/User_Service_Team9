@@ -63,7 +63,8 @@ public class UserController {
             String username = memberData.get("username");
             String password = memberData.get("password");
             String email = memberData.get("email");
-            Member newMember = userService.createMember(username, password, email);
+            Member newMember = UserFactory.createMember(username,password,email,Status.CREATED);
+            userService.saveMember(newMember);
             return ResponseEntity.status(HttpStatus.OK).body(newMember.getId());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

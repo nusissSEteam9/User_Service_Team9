@@ -25,12 +25,6 @@ public class UserService {
         memberRepository.save(member);
     }
 
-    public Member createMember(String username, String password, String email){
-        Member newMember = UserFactory.createMember(username,password,email);
-        newMember.setMemberStatus(Status.CREATED);
-        return memberRepository.save(newMember);
-    }
-
     // Searching and Filtering methods
     public Member getMemberById(Integer id) {
         Optional<Member> member = memberRepository.findById(id);

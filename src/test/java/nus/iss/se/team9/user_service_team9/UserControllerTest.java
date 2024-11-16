@@ -90,7 +90,7 @@ public class UserControllerTest {
         Member newMember = new Member();
         newMember.setId(1);
 
-        when(userService.createMember("username", "password", "email")).thenReturn(newMember);
+        when(UserFactory.createMember("username", "password", "email",Status.CREATED)).thenReturn(newMember);
 
         mockMvc.perform(post("/user/create")
                         .contentType(MediaType.APPLICATION_JSON)
