@@ -1,6 +1,5 @@
 package nus.iss.se.team9.user_service_team9;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import nus.iss.se.team9.user_service_team9.dto.ReviewDTO;
 import nus.iss.se.team9.user_service_team9.model.*;
@@ -181,7 +180,7 @@ public class UserController {
         }
     }
     @GetMapping("/member/savedList")
-    public ResponseEntity<?> showSavedList(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getSavedList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
@@ -191,7 +190,7 @@ public class UserController {
         return ResponseEntity.ok(recipes);
     }
     @GetMapping("/member/myRecipeList")
-    public ResponseEntity<?> showMyRecipeList(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getMyRecipeList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
@@ -204,7 +203,7 @@ public class UserController {
     }
 
     @GetMapping("/member/myReview")
-    public ResponseEntity<?> showMyReviewList(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getMyReviewList(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).body("User is not logged in.");
@@ -223,7 +222,7 @@ public class UserController {
     }
 
     @GetMapping("/member/myProfile")
-    public ResponseEntity<Member> viewMemberProfile(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Member> getMemberProfile(@RequestHeader("Authorization") String token) {
         Integer id = jwtService.extractId(token);
         if (id == null) {
             return ResponseEntity.status(401).build();
@@ -289,7 +288,7 @@ public class UserController {
 
     // View the shopping list
     @GetMapping("/member/shoppingList/view")
-    public ResponseEntity<List<ShoppingListItem>> viewShoppingListIngredient(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ShoppingListItem>> getShoppingListIngredient(@RequestHeader("Authorization") String token) {
         Member member = userService.getMemberById(jwtService.extractId(token));
         List<ShoppingListItem> shoppingList = member.getShoppingList();
         return ResponseEntity.ok(shoppingList);
